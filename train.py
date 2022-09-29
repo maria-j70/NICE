@@ -64,7 +64,7 @@ def main(args):
      
     if latent == 'normal':
         prior = torch.distributions.Normal(
-            torch.tensor(0.).to(device), torch.tensor(1.).to(device))
+            torch.tensor(0.), torch.tensor(1.))
     elif latent == 'logistic':
         prior = utils.StandardLogistic()
 
@@ -80,7 +80,7 @@ def main(args):
                 in_out_dim=full_dim, 
                 mid_dim=mid_dim, 
                 hidden=hidden, 
-                mask_config=mask_config).to(device)
+                mask_config=mask_config)
     optimizer = torch.optim.Adam(
         flow.parameters(), lr=lr, betas=(momentum, decay), eps=1e-4)
 
@@ -100,7 +100,7 @@ def main(args):
 
             inputs, _ = data
             inputs = utils.prepare_data(
-                inputs, dataset, zca=zca, mean=mean).to(device)
+                inputs, dataset, zca=zca, mean=mean)
 
             # log-likelihood of input minibatch
             loss = -flow(inputs).mean()

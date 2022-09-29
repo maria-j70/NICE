@@ -87,5 +87,5 @@ class StandardLogistic(torch.distributions.Distribution):
         Returns:
             samples.
         """
-        z = torch.distributions.Uniform(0., 1.).sample(size).cuda()
+        z = torch.distributions.Uniform(0., 1.).sample(size)
         return torch.log(z) - torch.log(1. - z)

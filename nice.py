@@ -162,7 +162,7 @@ class NICE(nn.Module):
         Returns:
             samples from the data space X.
         """
-        z = self.prior.sample((size, self.in_out_dim)).cuda()
+        z = self.prior.sample((size, self.in_out_dim))
         return self.g(z)
 
     def forward(self, x):
