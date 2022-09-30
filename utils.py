@@ -41,6 +41,11 @@ def prepare_data(x, dataset, zca=None, mean=None, reverse=False):
             assert W == 1 * 28 * 28
             x += mean
             x = x.reshape((B, 1, 28, 28))
+        elif dataset in ['hoda']:
+            assert W == 1 * 32 * 32
+            x += mean
+            x = x.reshape((B, 1, 32, 32))
+
         elif dataset in ['svhn', 'cifar10']:
             assert W == 3 * 32 * 32
             x = torch.matmul(x, zca.inverse()) + mean
@@ -57,7 +62,7 @@ def prepare_data(x, dataset, zca=None, mean=None, reverse=False):
         x = dequantize(x, dataset)
         x = x.reshape((B, C*H*W))
 
-        if dataset in ['mnist', 'fashion-mnist']:
+        if dataset in ['mnist', 'fashion-mnist', 'hoda']:
             x -= mean
         elif dataset in ['svhn', 'cifar10']:
             x = torch.matmul((x - mean), zca)

@@ -5,6 +5,12 @@ import argparse
 import torch, torchvision
 import numpy as np
 import nice, utils
+import os
+from HodaDatasetReader import read_hoda_dataset
+from data import HodaDataset
+OUTPUT_DIR = "reconstruction"
+os.makedirs(OUTPUT_DIR, exist_ok=True)
+
 
 def main(args):
     device = torch.device("cuda:0")
@@ -33,6 +39,22 @@ def main(args):
             train=True, download=True, transform=transform)
         trainloader = torch.utils.data.DataLoader(trainset,
             batch_size=batch_size, shuffle=True, num_workers=2)
+
+    elif dataset == 'hoda':
+        mean = torch.load('./statistics/hoda_mean.pt')
+
+        (full_dim, mid_dim, hidden) = (1 * 32 * 32, 100, 3)
+        # transform = torchvision.transforms.ToTensor()
+        X_train, Y_train = read_hoda_dataset(dataset_path='./DigitDB/Train 60000.cdb',
+                                             images_height=32,
+                                             images_width=32,
+                                             one_hot=False,
+                                             reshape=False)
+        trainset = HodaDataset(X_train, Y_train)
+        trainloader = torch.utils.data.DataLoader(trainset,
+                                                  batch_size=batch_size, shuffle=True, num_workers=0)
+
+
     elif dataset == 'fashion-mnist':
         mean = torch.load('./statistics/fashion_mnist_mean.pt')
         (full_dim, mid_dim, hidden) = (1 * 28 * 28, 1000, 5)
@@ -55,7 +77,7 @@ def main(args):
         mean = torch.load('./statistics/cifar10_mean.pt')
         transform = torchvision.transforms.Compose(
         [torchvision.transforms.RandomHorizontalFlip(p=0.5),
-         torchvisitransforms.ToTensor()])
+         torchvision.transforms.ToTensor()])
         (full_dim, mid_dim, hidden) = (3 * 32 * 32, 2000, 4)
         trainset = torchvision.datasets.CIFAR10(root='~/torch/data/CIFAR10',
             train=True, download=True, transform=transform)
@@ -89,7 +111,7 @@ def main(args):
     running_loss = 0
 
     while train:
-        for _, data in enumerate(trainloader, 1):
+        for x, data in enumerate(trainloader, 1):
             flow.train()    # set to training mode
             if total_iter == max_iter:
                 train = False
@@ -128,8 +150,11 @@ def main(args):
                     samples = flow.sample(sample_size).cpu()
                     samples = utils.prepare_data(
                         samples, dataset, zca=zca, mean=mean, reverse=True)
-                    torchvision.utils.save_image(torchvision.utils.make_grid(reconst),
-                        './reconstruction/' + filename +'iter%d.png' % total_iter)
+
+                    torchvision.utils.save_image(
+                        torchvision.utils.make_grid(reconst),
+                        OUTPUT_DIR +'/' + filename +'iter%d.png' % total_iter
+                    )
                     torchvision.utils.save_image(torchvision.utils.make_grid(samples),
                         './samples/' + filename +'iter%d.png' % total_iter)
 
